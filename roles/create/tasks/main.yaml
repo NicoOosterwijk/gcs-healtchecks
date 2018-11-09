@@ -1,0 +1,94 @@
+---
+# vim:ft=ansible:
+- name: Check if Google Cloud SDK is installed
+  command: gcloud version
+  register: gcloud_installed
+  changed_when: false
+  ignore_errors: yes
+  tags: check
+
+- fail:
+    msg: "Please make sure Google Cloud SDK is installed before executing the role."
+  when: gcloud_installed is failed
+  tags: check
+
+- name: Check if https_health_check was already created
+  command: "gcloud compute https-health-checks list --filter='name:{{ https_health_check.name }}' --format='value(NAME)'"
+  register: https_health_check_created
+  changed_when: false
+  ignore_errors: yes
+  tags: check,https
+
+- name: Debug https_health_check 
+  debug:
+    var: https_health_check_created.stdout
+  tags: check,https
+
+- name: Create https_health_check on google cloud platform
+  command: >
+    gcloud compute https-health-checks create {{ https_health_check.name }}
+    --project="{{ https_health_check.project }}"
+    --port="{{ https_health_check.port }}"
+    --request-path="{{ https_health_check.request_path }}"
+    --check-interval="{{ https_health_check.check_interval }}"
+    --timeout="{{ https_health_check.timeout }}"
+    --unhealthy-threshold="{{ https_health_check.unhealthy_threshold }}"
+    --healthy-threshold="{{ https_health_check.healthy_threshold }}"
+  changed_when: false
+  when: https_health_check_created.stdout == ""
+  tags: https
+
+
+- name: Check if http_health_check was already created
+  command: "gcloud compute http-health-checks list --filter='name:{{ http_health_check.name }}' --format='value(NAME)'"
+  register: http_health_check_created
+  changed_when: false
+  ignore_errors: yes
+  tags: check,http
+
+- name: Debug http_health_check
+  debug:
+    var: http_health_check_created.stdout
+  tags: check,http
+
+- name: Create http_health_check on google cloud platform
+  command: >
+    gcloud compute http-health-checks create {{ http_health_check.name }}
+    --project="{{ http_health_check.project }}"
+    --port="{{ http_health_check.port }}"
+    --request-path="{{ http_health_check.request_path }}"
+    --check-interval="{{ http_health_check.check_interval }}"
+    --timeout="{{ http_health_check.timeout }}"
+    --unhealthy-threshold="{{ http_health_check.unhealthy_threshold }}"
+    --healthy-threshold="{{ http_health_check.healthy_threshold }}"
+  changed_when: false
+  when: http_health_check_created.stdout == ""
+  tags: http
+
+- name: Check if prov_health_check was already created
+  command: "gcloud compute http-health-checks list --filter='name:{{ prov_health_check.name }}' --format='value(NAME)'"
+  register: prov_health_check_created
+  changed_when: false
+  ignore_errors: yes
+  tags: check,prov
+
+- name: Debug prov_health_check
+  debug:
+    var: prov_health_check_created.stdout
+  tags: check,prov
+
+- name: Create prov_health_check on google cloud platform
+  command: >
+    gcloud compute http-health-checks create {{ prov_health_check.name }}
+    --project="{{ prov_health_check.project }}"
+    --port="{{ prov_health_check.port }}"
+    --request-path="{{ prov_health_check.request_path }}"
+    --check-interval="{{ prov_health_check.check_interval }}"
+    --timeout="{{ prov_health_check.timeout }}"
+    --unhealthy-threshold="{{ prov_health_check.unhealthy_threshold }}"
+    --healthy-threshold="{{ prov_health_check.healthy_threshold }}"
+  changed_when: false
+  when: prov_health_check_created.stdout == ""
+  tags: prov
+
+
